@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>四月工作統籌清單 2026</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;background:#f5f5f3;color:#1a1a1a;min-height:100vh}
+.wrap{max-width:780px;margin:0 auto;padding:24px 16px}
+h2{font-size:20px;font-weight:600;color:#1a1a1a;margin-bottom:4px}
+.subtitle{font-size:13px;color:#888;margin-bottom:16px}
+.summary{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.metric{flex:1;min-width:80px;background:#fff;border-radius:10px;border:1px solid #e5e5e2;padding:12px;text-align:center}
+.metric-num{font-size:22px;font-weight:600;color:#1a1a1a}
+.metric-label{font-size:11px;color:#888;margin-top:2px}
+.date-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px;scrollbar-width:thin;scrollbar-color:#ccc transparent}
+.date-tabs::-webkit-scrollbar{height:4px}
+.date-tabs::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px}
+.date-tab{flex-shrink:0;padding:6px 10px;border:1px solid #e5e5e2;border-radius:8px;cursor:pointer;text-align:center;min-width:52px;background:#fff;transition:all 0.15s}
+.date-tab:hover{background:#f0f0ee}
+.date-tab.active{border-color:#1877F2;background:#e8f0fe}
+.date-tab .dnum{font-size:14px;font-weight:600;color:#1a1a1a}
+.date-tab.active .dnum{color:#1877F2}
+.date-tab .dday{font-size:10px;color:#888}
+.date-tab.active .dday{color:#1877F2}
+.date-tab .dprog{width:100%;height:3px;border-radius:2px;background:#e5e5e2;margin-top:4px}
+.date-tab .dprog-fill{height:3px;border-radius:2px;background:#1877F2;transition:width 0.2s}
+.date-tab.done-all .dprog-fill{background:#27AE60}
+.today-dot{display:block;font-size:8px;color:#E74C3C;font-weight:700}
+.section{margin-bottom:12px}
+.sec-header{display:flex;align-items:center;gap:8px;padding:9px 12px;background:#f0f0ee;border-radius:8px;margin-bottom:6px}
+.sec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sec-title{font-size:14px;font-weight:600;color:#1a1a1a;flex:1}
+.sec-badge{font-size:11px;color:#888}
+.card{background:#fff;border:1px solid #e5e5e2;border-radius:12px;overflow:hidden}
+.item{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-bottom:1px solid #f0f0ee}
+.item:last-child{border-bottom:none}
+.item:hover{background:#fafafa}
+.item input[type=checkbox]{width:16px;height:16px;flex-shrink:0;margin-top:2px;cursor:pointer;accent-color:#1877F2}
+.item-label{font-size:13px;color:#1a1a1a;flex:1;cursor:pointer;line-height:1.5}
+.item-label.done{color:#bbb;text-decoration:line-through}
+.item-sub{font-size:11px;color:#888;display:block;margin-top:1px}
+.tag{font-size:10px;padding:2px 7px;border-radius:999px;flex-shrink:0;margin-top:3px;font-weight:500}
+.tag-day{background:#e8f0fe;color:#1877F2}
+.tag-week{background:#fef3cd;color:#b8860b}
+.tag-once{background:#f0f0ee;color:#888}
+.note-once{font-size:11px;color:#aaa;padding:8px 12px;font-style:italic}
+.top-bar{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+.reset-btn{font-size:12px;color:#888;cursor:pointer;border:1px solid #e5e5e2;border-radius:8px;padding:4px 10px;background:#fff}
+.reset-btn:hover{background:#f5f5f3}
+.day-label{font-size:14px;font-weight:600;color:#1a1a1a;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.today-badge{font-size:10px;padding:2px 8px;border-radius:999px;background:#fde8e8;color:#E74C3C;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-bar">
+    <div>
+      <h2>四月工作統籌清單</h2>
+      <div class="subtitle">2026 年 4 月 1 日 — 4 月 30 日</div>
+    </div>
+    <button class="reset-btn" onclick="resetDay()">重設本日</button>
+  </div>
+
+  <div class="summary">
+    <div class="metric"><div class="metric-num" id="m-today">0%</div><div class="metric-label">本日完成率</div></div>
+    <div class="metric"><div class="metric-num" id="m-days">0</div><div class="metric-label">已完成天數</div></div>
+    <div class="metric"><div class="metric-num" id="m-total">0</div><div class="metric-label">本月總完成項</div></div>
+  </div>
+
+  <div class="date-tabs" id="date-tabs"></div>
+  <div class="day-label" id="day-label"></div>
+  <div id="checklist"></div>
+</div>
+
+<script>
+const days_tw=["日","一","二","三","四","五","六"];
+const YEAR=2026,MONTH=3;
+
+const sections=[
+  {id:"fb",dot:"#1877F2",title:"FB 工作項目",items:[
+    {text:"導入帳號",sub:"200 個",freq:"day"},
+    {text:"更換頭貼",sub:"120 個",freq:"day"},
+    {text:"更換姓名、ID",sub:"120 個",freq:"day"},
+    {text:"加入社團（爆系）",sub:"排程加入",freq:"once"},
+    {text:"製造生活痕跡",sub:"50 個帳號",freq:"day"},
+  ]},
+  {id:"ig",dot:"#E1306C",title:"IG + THREAD 工作項目",items:[
+    {text:"導入帳號",sub:"100 個",freq:"day"},
+    {text:"更換頭貼＋姓名＋ID",sub:"100 個",freq:"day"},
+    {text:"發佈生活痕跡貼文",sub:"ABCD 四組各 30 帳號，每帳號每週 3 次",freq:"week"},
+  ]},
+  {id:"phone",dot:"#34B7F1",title:"個人手機養號",items:[
+    {text:"IG 帳號維護",sub:"每人 5 個（死號可補）",freq:"once"},
+    {text:"THREAD 帳號維護",sub:"每人 5 個（死號可補）",freq:"once"},
+    {text:"個人 IP 帳號發文",sub:"每週至少 2 篇",freq:"week"},
+  ]},
+  {id:"solo",dot:"#F5A623",title:"社群協助 Solo 推廣",items:[
+    {text:"FB 按讚",sub:"20–50 個",freq:"day"},
+    {text:"IG + THREAD 按讚",sub:"80–100 個",freq:"day"},
+    {text:"IG + THREAD 留言",sub:"5–10 則",freq:"day"},
+    {text:"全平台分享／轉發",sub:"全部手機帳號",freq:"day"},
+  ]},
+  {id:"food",dot:"#27AE60",title:"美食粉絲專頁",items:[
+    {text:"發佈每日貼文",sub:"每天一則",freq:"day"},
+    {text:"流量報告",sub:"每週六提交",freq:"week"},
+  ]},
+  {id:"video",dot:"#9B59B6",title:"Solo 四月拍攝影片",items:[
+    {text:"櫃台詢問方案",sub:"",freq:"once"},
+    {text:"香檳王",sub:"",freq:"once"},
+    {text:"遞麥",sub:"",freq:"once"},
+  ]},
+  {id:"head",dot:"#E74C3C",title:"製作頭貼",items:[
+    {text:"每人製作頭貼",sub:"10 張／人",freq:"day"},
+  ]},
+];
+
+const today=new Date();
+const isApril2026=today.getFullYear()===YEAR&&today.getMonth()===MONTH;
+let selectedDay=isApril2026?today.getDate():1;
+const KEY="apr2026_wc";
+
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch{return{}}}
+function save(s){try{localStorage.setItem(KEY,JSON.stringify(s))}catch{}}
+function dayKey(d,sid,i){return`d${d}_${sid}_${i}`}
+
+function getDayStats(d){
+  const state=load();
+  let done=0,total=0;
+  sections.forEach(sec=>sec.items.forEach((item,i)=>{
+    if(item.freq==="once")return;
+    total++;
+    if(state[dayKey(d,sec.id,i)])done++;
+  }));
+  return{done,total};
+}
+
+function renderTabs(){
+  const tabs=document.getElementById("date-tabs");
+  tabs.innerHTML="";
+  for(let d=1;d<=30;d++){
+    const date=new Date(YEAR,MONTH,d);
+    const dow=days_tw[date.getDay()];
+    const{done,total}=getDayStats(d);
+    const pct=total?Math.round(done/total*100):0;
+    const allDone=total>0&&done===total;
+    const isToday=isApril2026&&today.getDate()===d;
+    const tab=document.createElement("div");
+    tab.className="date-tab"+(d===selectedDay?" active":"")+(allDone?" done-all":"");
+    tab.innerHTML=`<div class="dnum">${d}${isToday?'<span class="today-dot">今天</span>':''}</div><div class="dday">週${dow}</div><div class="dprog"><div class="dprog-fill" style="width:${pct}%"></div></div>`;
+    tab.onclick=(()=>{const dd=d;return()=>{selectedDay=dd;renderAll();}})();
+    tabs.appendChild(tab);
+  }
+  setTimeout(()=>{
+    const active=tabs.querySelector(".active");
+    if(active)active.scrollIntoView({inline:"center",behavior:"smooth"});
+  },50);
+}
+
+function renderChecklist(){
+  const state=load();
+  const cl=document.getElementById("checklist");
+  cl.innerHTML="";
+  const date=new Date(YEAR,MONTH,selectedDay);
+  const dow=days_tw[date.getDay()];
+  const isSat=date.getDay()===6;
+  const isToday=isApril2026&&today.getDate()===selectedDay;
+  document.getElementById("day-label").innerHTML=`2026 年 4 月 ${selectedDay} 日（週${dow}）${isToday?'<span class="today-badge">今天</span>':""}`;
+
+  sections.forEach(sec=>{
+    const visItems=sec.items;
+    const done=visItems.filter((item,i)=>state[dayKey(selectedDay,sec.id,i)]).length;
+    const div=document.createElement("div");
+    div.className="section";
+    div.innerHTML=`<div class="sec-header"><span class="sec-dot" style="background:${sec.dot}"></span><span class="sec-title">${sec.title}</span><span class="sec-badge">${done}/${visItems.length}</span></div>`;
+    const card=document.createElement("div");
+    card.className="card";
+    visItems.forEach((item,i)=>{
+      const k=dayKey(selectedDay,sec.id,i);
+      const checked=!!state[k];
+      const freqLabel=item.freq==="once"?"一次性":item.freq==="week"?"每週":"每日";
+      const freqCls=item.freq==="once"?"tag-once":item.freq==="week"?"tag-week":"tag-day";
+      const row=document.createElement("div");
+      row.className="item";
+      row.innerHTML=`<input type="checkbox" id="${k}" ${checked?"checked":""}><label for="${k}" class="item-label${checked?" done":""}">${item.text}${item.sub?`<span class="item-sub">${item.sub}</span>`:""}</label><span class="tag ${freqCls}">${freqLabel}</span>`;
+      row.querySelector("input").addEventListener("change",function(){
+        const s=load();s[k]=this.checked;save(s);renderAll();
+      });
+      card.appendChild(row);
+    });
+    if(sec.id==="food"&&!isSat){
+      const note=document.createElement("div");
+      note.className="note-once";
+      note.textContent="※ 流量報告僅限週六提交";
+      card.appendChild(note);
+    }
+    div.appendChild(card);
+    cl.appendChild(div);
+  });
+}
+
+function renderSummary(){
+  let todayDone=0,todayTotal=0,totalDone=0,completeDays=0;
+  for(let d=1;d<=30;d++){
+    const{done,total}=getDayStats(d);
+    if(d===selectedDay){todayDone=done;todayTotal=total;}
+    totalDone+=done;
+    if(total>0&&done===total)completeDays++;
+  }
+  document.getElementById("m-today").textContent=todayTotal?Math.round(todayDone/todayTotal*100)+"%":"0%";
+  document.getElementById("m-days").textContent=completeDays;
+  document.getElementById("m-total").textContent=totalDone;
+}
+
+function renderAll(){renderTabs();renderChecklist();renderSummary();}
+function resetDay(){const s=load();Object.keys(s).filter(k=>k.startsWith(`d${selectedDay}_`)).forEach(k=>delete s[k]);save(s);renderAll();}
+
+renderAll();
+</script>
+</body>
+</html>
